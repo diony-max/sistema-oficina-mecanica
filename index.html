@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoGaragem - Sistema de Vendas</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<header>
+  <div class="header-esquerda">
+    <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+    <div class="info-estabelecimento">
+      <h1 id="nomeLoja">🔧 AutoGaragem Premium</h1>
+      <span class="slogan" id="sloganLoja">Serviços automotivos com qualidade</span>
+    </div>
+  </div>
+  <div class="data-hora" id="dataHora"></div>
+</header>
+
+<nav class="menu-erp">
+  <button class="menu-btn ativo" data-view="pdv">🛒 PDV</button>
+  <button class="menu-btn" data-view="dashboard">📊 Dashboard</button>
+  <button class="menu-btn" data-view="estoque">📦 Estoque</button>
+  <button class="menu-btn" data-view="vendas">🧾 Vendas / NF</button>
+  <button class="menu-btn" data-view="produtos">🏷️ Serviços e Peças</button>
+  <button class="menu-btn" data-view="clientes">👥 Clientes</button>
+  <button class="menu-btn" data-view="config">⚙️ Config</button>
+</nav>
+
+<!-- ============ VIEW PDV ============ -->
+<section class="view ativo" id="view-pdv">
+  <div class="container">
+    <div class="produtos-area">
+      <div class="categorias" id="categorias"></div>
+      <div class="grid-produtos" id="gridProdutos"></div>
+    </div>
+
+    <div class="carrinho-area">
+      <h2>🛒 Ordem de Serviço</h2>
+
+      <div class="cliente-select">
+  <label>Cliente:</label>
+  <select id="clienteSelect">
+    <option value="">-- Selecione --</option>
+  </select>
+</div>
+
+<!-- 🆕 DADOS DA ORDEM DE SERVIÇO -->
+<div class="os-dados">
+  <div class="os-linha">
+    <label>🚗 KM entrada</label>
+    <input type="number" id="osKmEntrada" placeholder="Ex: 85000" min="0">
+  </div>
+  <div class="os-linha">
+    <label>👨🔧 Mecânico</label>
+    <input type="text" id="osMecanico" placeholder="Nome do responsável">
+  </div>
+  <div class="os-linha-dupla">
+    <div>
+      <label>📅 Entrada</label>
+      <input type="date" id="osDataEntrada">
+    </div>
+    <div>
+      <label>📅 Previsão saída</label>
+      <input type="date" id="osDataSaida">
+    </div>
+  </div>
+  <div class="os-linha">
+    <label>🛡️ Garantia (dias)</label>
+    <input type="number" id="osGarantia" placeholder="Ex: 90" min="0" value="90">
+  </div>
+
+  <!-- 🆕 CHECKLIST DE ENTRADA -->
+  <div class="os-checklist">
+    <label class="check-titulo">📋 Reclamações do cliente</label>
+    <div class="check-opcoes">
+      <label><input type="checkbox" value="Motor"> Motor</label>
+      <label><input type="checkbox" value="Freios"> Freios</label>
+      <label><input type="checkbox" value="Suspensão"> Suspensão</label>
+      <label><input type="checkbox" value="Elétrica"> Elétrica</label>
+      <label><input type="checkbox" value="Ar-condicionado"> Ar-condicionado</label>
+      <label><input type="checkbox" value="Câmbio"> Câmbio</label>
+      <label><input type="checkbox" value="Direção"> Direção</label>
+      <label><input type="checkbox" value="Pneus"> Pneus</label>
+      <label><input type="checkbox" value="Barulho"> Barulho estranho</label>
+      <label><input type="checkbox" value="Vibração"> Vibração</label>
+    </div>
+    <textarea id="osObservacoes" placeholder="Observações adicionais..." rows="2"></textarea>
+  </div>
+</div>
+
+      <div class="lista-carrinho" id="listaCarrinho">
+        <div class="vazio">Nenhum item adicionado</div>
+      </div>
+
+      <div class="total-area">
+        <div class="total-linha">
+          <span>TOTAL:</span>
+          <span id="totalGeral">R$ 0,00</span>
+        </div>
+
+        <div class="pagamento" id="pagamento">
+          <button data-pgto="Dinheiro">💵 Dinheiro</button>
+          <button data-pgto="Débito">💳 Débito</button>
+          <button data-pgto="Crédito">💳 Crédito</button>
+          <button data-pgto="Pix">📱 Pix</button>
+          <button data-pgto="Parcelado">📆 Parcelado</button>
+          <button data-pgto="Fiado">📝 Fiado</button>
+        </div>
+
+        <button class="btn-finalizar" id="btnFinalizar" disabled>Finalizar Venda</button>
+        <button class="btn-limpar" id="btnLimpar">Limpar Carrinho</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VIEW DASHBOARD ============ -->
+<section class="view" id="view-dashboard">
+  <div class="painel">
+    <h2>📊 Dashboard do Dia</h2>
+    <div class="cards-resumo">
+      <div class="card-resumo">
+        <span class="card-label">Vendas hoje</span>
+        <span class="card-valor" id="dashTotalHoje">R$ 0,00</span>
+      </div>
+      <div class="card-resumo">
+        <span class="card-label">Nº de vendas</span>
+        <span class="card-valor" id="dashQtdVendas">0</span>
+      </div>
+      <div class="card-resumo">
+        <span class="card-label">Ticket médio</span>
+        <span class="card-valor" id="dashTicket">R$ 0,00</span>
+      </div>
+      <div class="card-resumo">
+        <span class="card-label">Itens vendidos</span>
+        <span class="card-valor" id="dashItens">0</span>
+      </div>
+    </div>
+
+    <div class="grid-2col">
+      <div class="bloco">
+        <h3>💳 Formas de Pagamento (hoje)</h3>
+        <div id="dashPagamentos"></div>
+      </div>
+      <div class="bloco">
+        <h3>🔥 Top 5 Serviços (hoje)</h3>
+        <div id="dashTopProdutos"></div>
+      </div>
+    </div>
+
+    <div class="bloco">
+      <h3>🕐 Últimas 5 Vendas</h3>
+      <div id="dashUltimasVendas"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VIEW ESTOQUE ============ -->
+<section class="view" id="view-estoque">
+  <div class="painel">
+    <h2>📦 Controle de Estoque</h2>
+    <div class="filtros">
+      <button class="filtro-btn ativo" data-filtro="todos">Todos</button>
+      <button class="filtro-btn" data-filtro="baixo">⚠️ Estoque Baixo</button>
+      <button class="filtro-btn" data-filtro="zerado">🚫 Zerado</button>
+    </div>
+    <div id="tabelaEstoque"></div>
+  </div>
+</section>
+
+<!-- ============ VIEW VENDAS ============ -->
+<section class="view" id="view-vendas">
+  <div class="painel">
+    <h2>🧾 Histórico de Vendas e NF</h2>
+    <div class="filtros">
+      <button class="filtro-btn ativo" data-filtro-venda="hoje">Hoje</button>
+      <button class="filtro-btn" data-filtro-venda="7dias">7 dias</button>
+      <button class="filtro-btn" data-filtro-venda="mes">Este mês</button>
+      <button class="filtro-btn" data-filtro-venda="todas">Todas</button>
+    </div>
+    <div id="resumoVendas" class="resumo-vendas"></div>
+    <div id="listaVendas"></div>
+    <button class="btn-perigo" id="btnLimparVendas">🗑️ Limpar Histórico</button>
+  </div>
+</section>
+
+<!-- ============ VIEW PRODUTOS ============ -->
+<section class="view" id="view-produtos">
+  <div class="painel">
+    <h2>🏷️ Cadastro de Serviços e Peças</h2>
+
+    <form class="form-produto" id="formProduto">
+      <input type="hidden" id="produtoId">
+      <div class="form-grid">
+        <input type="text" id="prodNome" placeholder="Nome do serviço/peça" required>
+        <input type="text" id="prodEmoji" placeholder="Emoji (ex: 🔧)" maxlength="2" value="🔧">
+        <input type="text" id="prodCategoria" placeholder="Categoria" list="catList" required>
+        <datalist id="catList"></datalist>
+        <input type="number" id="prodPreco" placeholder="Preço (R$)" step="0.01" min="0" required>
+        <input type="number" id="prodCusto" placeholder="Custo (R$)" step="0.01" min="0">
+        <input type="number" id="prodEstoque" placeholder="Estoque (peças)" min="0" value="0">
+        <input type="number" id="prodEstoqueMin" placeholder="Estoque mínimo" min="0" value="3">
+        <input type="text" id="prodDescricao" placeholder="Descrição curta">
+      </div>
+      <div class="form-acoes">
+        <button type="submit" class="btn-sucesso" id="btnSalvarProduto">➕ Adicionar</button>
+        <button type="button" class="btn-neutro" id="btnCancelarEdicao" style="display:none">Cancelar</button>
+      </div>
+    </form>
+
+    <div id="listaProdutosAdmin"></div>
+  </div>
+</section>
+
+<!-- ============ VIEW CLIENTES ============ -->
+<section class="view" id="view-clientes">
+  <div class="painel">
+    <h2>👥 Clientes</h2>
+
+    <form class="form-cliente" id="formCliente">
+      <div class="form-grid">
+        <input type="text" id="cliNome" placeholder="Nome do cliente" required>
+        <input type="text" id="cliTelefone" placeholder="Telefone">
+        <input type="text" id="cliCpf" placeholder="CPF/CNPJ">
+        <input type="text" id="cliVeiculo" placeholder="Veículo (ex: Fiat Uno 2015)">
+        <input type="text" id="cliPlaca" placeholder="Placa (ex: ABC-1234)">
+        <input type="text" id="cliEndereco" placeholder="Endereço">
+      </div>
+      <button type="submit" class="btn-sucesso">➕ Cadastrar Cliente</button>
+    </form>
+
+    <div id="listaClientes"></div>
+  </div>
+</section>
+
+<!-- ============ VIEW CONFIG ============ -->
+<section class="view" id="view-config">
+  <div class="painel">
+    <h2>⚙️ Configurações da Garagem</h2>
+    <form class="form-cliente" id="formConfig">
+      <div class="form-grid">
+        <input type="text" id="cfgNome" placeholder="Nome da empresa">
+        <input type="text" id="cfgCnpj" placeholder="CNPJ">
+        <input type="text" id="cfgTelefone" placeholder="Telefone">
+        <input type="text" id="cfgEndereco" placeholder="Endereço">
+        <input type="text" id="cfgCidade" placeholder="Cidade">
+        <input type="text" id="cfgUf" placeholder="UF" maxlength="2">
+        <input type="text" id="cfgChavePix" placeholder="Chave PIX">
+        <input type="text" id="cfgInscricao" placeholder="Inscrição Estadual">
+      </div>
+      <button type="submit" class="btn-sucesso">💾 Salvar Configurações</button>
+    </form>
+  </div>
+</section>
+
+<!-- MODAL PIX -->
+<div class="modal" id="modalPix">
+  <div class="modal-conteudo">
+    <h2>📱 Pagamento PIX</h2>
+    <p class="pix-valor" id="pixValor">R$ 0,00</p>
+    <div class="pix-qrcode" id="pixQrCode"></div>
+    <div class="pix-copia-cola">
+      <input type="text" id="pixCopiaCola" readonly>
+      <button class="btn-mini laranja" onclick="copiarPix()">📋 Copiar</button>
+    </div>
+    <div class="pix-status" id="pixStatus">⏳ Aguardando pagamento...</div>
+    <div class="modal-acoes">
+      <button class="btn-neutro" onclick="fecharPix()">Cancelar</button>
+      <button class="btn-sucesso" id="btnConfirmarPix">✅ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RECIBO -->
+<div class="modal" id="modalRecibo">
+  <div class="modal-conteudo">
+    <h2>✅ Venda Concluída!</h2>
+    <div class="recibo" id="recibo"></div>
+    <div class="modal-acoes">
+      <button class="btn-neutro" onclick="fecharModal()">Nova Venda</button>
+      <button class="btn-laranja" onclick="imprimirRecibo()">🖨️ Imprimir</button>
+      <button class="btn-sucesso" onclick="emitirNF()">🧾 Emitir NF</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NF -->
+<div class="modal modal-largo" id="modalNF">
+  <div class="modal-conteudo">
+    <h2>🧾 Nota Fiscal de Serviço</h2>
+    <div id="nfForm" class="form-grid">
+      <input type="text" id="nfDestNome" placeholder="Nome do destinatário">
+      <input type="text" id="nfDestCpf" placeholder="CPF/CNPJ">
+      <input type="text" id="nfDestEnd" placeholder="Endereço">
+      <input type="text" id="nfVeiculo" placeholder="Veículo / Placa">
+    </div>
+    <div class="danfe" id="danfe"></div>
+    <div class="modal-acoes">
+      <button class="btn-neutro" onclick="fecharNF()">Cancelar</button>
+      <button class="btn-laranja" onclick="window.print()">🖨️ Imprimir DANFE</button>
+      <button class="btn-sucesso" onclick="confirmarNF()">✅ Autorizar NF</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
